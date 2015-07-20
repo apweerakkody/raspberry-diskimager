@@ -52,3 +52,8 @@ docs/_build/
 
 # PyBuilder
 target/
+
+# Build and Release directory
+build/
+dist/
+Release/

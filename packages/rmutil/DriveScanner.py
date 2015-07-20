@@ -16,14 +16,12 @@ def preScan():
         splitted = rest.split(" ")
         disk = splitted[0]
         disk = disk[:-1]
-        print "DISK FOUND: ", disk
         PRE_SCAN_RESULT.append(disk)
         index = disks.find("/dev/", index+5)
-    print ""
-    print "PRE SCAN RESULT: ", PRE_SCAN_RESULT
 
 def scanForNew():
     newDisk = None
+    size = None
     # scan again and return new device
     proc = subprocess.Popen(["diskutil", "list"],stdin=subprocess.PIPE,stdout=subprocess.PIPE)
     disks = proc.communicate()
@@ -34,21 +32,21 @@ def scanForNew():
         splitted = rest.split(" ")
         disk = splitted[0]
         disk = disk[:-1]
-        print "DISK FOUND: ", disk
         if not PRE_SCAN_RESULT == None and not disk in PRE_SCAN_RESULT:
             newDisk = disk
+            infoIndex = splitted.index("GB")
+            size = splitted[infoIndex-1] + " " + splitted[infoIndex]
+            if size.startswith("*"):
+                size = size[1:]
         index = disks.find("/dev/", index+5)
-    print ""
     if not newDisk == None:
-        print "NEW DISK: ", newDisk
         if not "rdisk" in newDisk:
             index = newDisk.find("disk")
             path = newDisk[:index]
             name = "r"+newDisk[index:]
             newRdisk = path+name
-            print "Using raw disk name for dd command: ", newRdisk
-            return newDisk, newRdisk
+            return newDisk, newRdisk, size
         else:
-            return newDisk, newDisk
+            return newDisk, newDisk, size
     else:
-        return None
+        return None, None, None
