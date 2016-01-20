@@ -2,7 +2,7 @@ import wx
 import sys, os, platform, subprocess, time
 import SDDetectDialog
 
-from appscript import *
+#from appscript import *
 
 BASE_PATH = None
 INFO_SHOWN = False
@@ -131,52 +131,23 @@ class ImagerFrame(wx.Frame):
             self.runBtn.Disable()
 
     def ExecuteClicked(self, event):
-        dlg = wx.MessageDialog(self, "Ready to write image file to disk " + self.disk + "\nThis app will close when the process is finished. A command prompt will ask for your user password and then write the disk.\nYou will see no progress, just wait until the command is complete and the Imager app closes!", "Ready to write disk...", style=wx.OK|wx.CANCEL)
+        dlg = wx.MessageDialog(self, "Ready to write image file to disk " + self.disk + "\nYour disk will be erased and the image is written to the disk.\nSome parts need administrator privileges so you will be asked for your user password 3 times!\nYou will see no progress while the image is written, just wait until it is done and Disk Imager closes!", "Ready to write disk...", style=wx.OK|wx.CANCEL)
         if dlg.ShowModal() == wx.ID_OK:
             path = os.path.split(self.imagePath)[0]
             filename = os.path.basename(self.imagePath)
             os.chdir(path)
             csPath = self.cwd + '/executables/cocoasudo'
-            terminal = app('Terminal')
+            #terminal = app('Terminal')
             cmd = "cd '" + self.cwd + "'"
-            cmd +=(" && echo ------------------------------------------------")
-            cmd +=(" && echo 'Please provide your Administrator password to proceed!'")
-            cmd +=(" && sudo diskutil eraseDisk fat32 RASPMEDIA "+self.diskName)
-            cmd +=(" && echo Disabling SD Card for image writing...")
-            cmd +=(" && sudo diskutil unmount "+self.diskName+"s2")
-            cmd +=(" && echo ================================================")
-            cmd +=(" && echo ================================================")
-            cmd +=(" && echo WRITING IMAGE TO YOUR SD CARD, DO NOT CLOSE THIS WINDOW OR THE IMAGER APPLICATION!")
-            cmd +=(" && echo ================================================")
-            cmd +=(" && echo RPi Disk Imager will be closed when the process is finished.")
-            cmd +=(" && echo PLEASE WAIT! Writing the image can take up to 30 minutes depending on your SD Card speed!")
-            cmd +=(" && echo ...")
+            cmd +=(" && \"" + csPath + "\" --prompt=\"DiskImager needs Administrator privileges\" diskutil eraseDisk fat32 RASPMEDIA "+self.diskName)
+            cmd +=(" && \"" + csPath + "\" --prompt=\"DiskImager needs Administrator privileges\" diskutil unmount "+self.diskName+"s2")
             cmd +=(" && cd \""+path+"\"")
-            cmd +=(" && sudo dd bs=1m if="+filename+" of="+self.disk)
-            cmd +=(" && echo ================================================")
-            cmd +=(" && echo ================================================")
-            cmd +=(" && echo IMAGE SUCCESSFULLY WRITTEN TO YOUR SD CARD!")
-            cmd +=(" && echo RPi Disk Imager will close now!")
-            cmd +=(" && echo Bye bye...")
-            terminal.do_script(cmd)
-            '''
-            os.system("echo " + pwd + " | sudo diskutil eraseDisk fat32 RASPMEDIA "+self.diskName)
-            os.system("echo Disabling SD Card for image writing...")
-            os.system("sudo diskutil unmount "+self.diskName+"s2")
-            os.system("echo ================================================")
-            os.system("echo ================================================")
-            os.system("echo WRITING IMAGE TO YOUR SD CARD, DO NOT CLOSE THIS WINDOW OR THE IMAGER APPLICATION!")
-            os.system("echo ================================================")
-            os.system("echo RPi Disk Imager will be closed when the process is finished.")
-            os.system("echo PLEASE WAIT! Writing the image can take up to 30 minutes depending on your SD Card speed!")
-            os.system("echo ...")
-            os.system("sudo dd bs=1m if="+filename+" of="+self.disk)
-            os.system("echo ================================================")
-            os.system("echo ================================================")
-            os.system("echo IMAGE SUCCESSFULLY WRITTEN TO YOUR SD CARD!")
-            os.system("echo RPi Disk Imager will close now!")
-            os.system("echo Bye bye...")
-            '''
+            cmd +=(" && \"" + csPath + "\" --prompt=\"DiskImager needs Administrator privileges\" dd bs=1m if="+filename+" of="+self.disk)
+            #terminal.do_script(cmd)
+            prg = wx.ProgressDialog("Processing...", "Grab a coffee and PLEASE WAIT!\n\nDisk Imager is processing your card.\nDepending on SD Card speed this can\ntake up to 30 Minutes! Do nothing and\nwait until it is done, this app will close\nwhen your card is written.")
+            prg.Pulse()
+            os.system(cmd)
+            prg.Update(100)
         self.Close()
         
 

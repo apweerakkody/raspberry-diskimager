@@ -8,8 +8,11 @@ Usage:
 from setuptools import setup
 
 APP = ['RPiDiskImager.py']
-DATA_FILES = []
-OPTIONS = {'argv_emulation': True}
+DATA_FILES = ['img', 'executables']
+OPTIONS = {
+    'iconfile':'img/ic_main.icns',
+    'argv_emulation': True
+}
 
 setup(
     app=APP,
